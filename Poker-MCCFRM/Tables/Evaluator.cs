@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SnapCall
 {
@@ -79,15 +78,53 @@ namespace SnapCall
 		public void SaveToFile(string fileName)
 		{
             using var fileStream = File.Create(fileName);
-            BinaryFormatter bf = new BinaryFormatter();
-            bf.Serialize(fileStream, handRankMap);
+            using var writer = new BinaryWriter(fileStream);
+
+            // Write HashMap properties
+            writer.Write(handRankMap.Size);
+            writer.Write(handRankMap.Count);
+            writer.Write(handRankMap.TotalSize);
+            writer.Write(handRankMap.Misses);
+
+            // Write Data arrays
+            writer.Write(handRankMap.Data.Count);
+            foreach (var wrapper in handRankMap.Data)
+            {
+                writer.Write(wrapper.Array.Length);
+                foreach (var value in wrapper.Array)
+                {
+                    writer.Write(value);
+                }
+            }
         }
 
 		private void LoadFromFile(string fileName)
 		{
             using var fileStream = File.OpenRead(fileName);
-            var binForm = new BinaryFormatter();
-            handRankMap = (HashMap)binForm.Deserialize(fileStream);
+            using var reader = new BinaryReader(fileStream);
+
+            // Read HashMap properties
+            handRankMap = new HashMap
+            {
+                Size = reader.ReadUInt32(),
+                Count = reader.ReadUInt32(),
+                TotalSize = reader.ReadUInt32(),
+                Misses = reader.ReadInt32()
+            };
+
+            // Read Data arrays
+            int dataCount = reader.ReadInt32();
+            handRankMap.Data = new List<ArrayWrapper>(dataCount);
+            for (int i = 0; i < dataCount; i++)
+            {
+                int arrayLength = reader.ReadInt32();
+                var array = new ulong[arrayLength];
+                for (int j = 0; j < arrayLength; j++)
+                {
+                    array[j] = reader.ReadUInt64();
+                }
+                handRankMap.Data.Add(new ArrayWrapper { Array = array });
+            }
         }
 
 		private void GenerateFiveCardTable()

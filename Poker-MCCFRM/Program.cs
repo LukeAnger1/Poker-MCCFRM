@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -266,12 +265,27 @@ namespace Poker_MCCFRM
                 return;
             }
         }
-        private static byte[] SerializeToBytes<T>(T item)
+        private static byte[] SerializeToBytes(Infoset item)
         {
-            var formatter = new BinaryFormatter();
             using var stream = new MemoryStream();
-            formatter.Serialize(stream, item);
-            stream.Seek(0, SeekOrigin.Begin);
+            using var writer = new BinaryWriter(stream);
+
+            // Write array lengths
+            writer.Write(item.regret.Length);
+            writer.Write(item.actionCounter.Length);
+
+            // Write regret array
+            foreach (var value in item.regret)
+            {
+                writer.Write(value);
+            }
+
+            // Write actionCounter array
+            foreach (var value in item.actionCounter)
+            {
+                writer.Write(value);
+            }
+
             return stream.ToArray();
         }
         private static Infoset Deserialize(this byte[] byteArray)
@@ -280,12 +294,28 @@ namespace Poker_MCCFRM
             {
                 return null;
             }
-            using var memStream = new MemoryStream();
-            var binForm = new BinaryFormatter();
-            memStream.Write(byteArray, 0, byteArray.Length);
-            memStream.Seek(0, SeekOrigin.Begin);
-            Infoset obj = (Infoset)binForm.Deserialize(memStream);
-            return obj;
+            using var memStream = new MemoryStream(byteArray);
+            using var reader = new BinaryReader(memStream);
+
+            // Read array lengths
+            int regretLength = reader.ReadInt32();
+            int actionCounterLength = reader.ReadInt32();
+
+            var infoset = new Infoset(regretLength);
+
+            // Read regret array
+            for (int i = 0; i < regretLength; i++)
+            {
+                infoset.regret[i] = reader.ReadSingle();
+            }
+
+            // Read actionCounter array
+            for (int i = 0; i < actionCounterLength; i++)
+            {
+                infoset.actionCounter[i] = reader.ReadSingle();
+            }
+
+            return infoset;
         }
     }
 }
