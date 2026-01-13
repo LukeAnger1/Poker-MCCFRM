@@ -55,7 +55,27 @@ dotnet --version
 cd /home/user/Poker-MCCFRM
 ```
 
-### 3. Restore NuGet Dependencies
+### 3. Update Project to .NET 8.0 (If Not Already Done)
+
+The project originally targeted .NET Core 3.0 (out of support). It has been updated to .NET 8.0.
+
+If you cloned an older version, verify the project file:
+```bash
+grep "TargetFramework" Poker-MCCFRM/Poker-MCCFRM.csproj
+```
+
+Should show: `<TargetFramework>net8.0</TargetFramework>`
+
+If it shows `net8.0`, edit the file and change line 5 from:
+```xml
+<TargetFramework>net8.0</TargetFramework>
+```
+to:
+```xml
+<TargetFramework>net8.0</TargetFramework>
+```
+
+### 4. Restore NuGet Dependencies
 ```bash
 dotnet restore Poker-MCCFRM.sln
 ```
@@ -64,7 +84,7 @@ This will download:
 - **Combinatorics** (v1.1.0.19) - For generating card combinations
 - **Microsoft.FASTER** (v2019.11.18.1) - High-performance key-value store
 
-### 4. Build the Project
+### 5. Build the Project
 
 #### Debug Build (includes debugging symbols)
 ```bash
@@ -77,8 +97,8 @@ dotnet build Poker-MCCFRM.sln --configuration Release
 ```
 
 The compiled executable will be located at:
-- Debug: `Poker-MCCFRM/bin/Debug/netcoreapp3.0/Poker-MCCFRM.dll`
-- Release: `Poker-MCCFRM/bin/Release/netcoreapp3.0/Poker-MCCFRM.dll`
+- Debug: `Poker-MCCFRM/bin/Debug/net8.0/Poker-MCCFRM.dll`
+- Release: `Poker-MCCFRM/bin/Release/net8.0/Poker-MCCFRM.dll`
 
 ## Running the Application
 
@@ -89,7 +109,7 @@ dotnet run --project Poker-MCCFRM/Poker-MCCFRM.csproj
 
 ### Run Compiled Executable (Release - Faster)
 ```bash
-dotnet Poker-MCCFRM/bin/Release/netcoreapp3.0/Poker-MCCFRM.dll
+dotnet Poker-MCCFRM/bin/Release/net8.0/Poker-MCCFRM.dll
 ```
 
 ### Run with Performance Optimizations
